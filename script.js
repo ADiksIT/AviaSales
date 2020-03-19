@@ -1,4 +1,5 @@
 
+
 const   formSearch = document.querySelector('.form-search'),
         inputCitiesFrom = formSearch.querySelector('.input__cities-from'),
         dropdownCitiesFrom = formSearch.querySelector('.dropdown__cities-from'),
@@ -6,11 +7,18 @@ const   formSearch = document.querySelector('.form-search'),
         dropdownCitiesTo = formSearch.querySelector('.dropdown__cities-to'),
         inputDateDepart = formSearch.querySelector('.input__date-depart');
 
-const city = [
-    "Москва", "Киев", "Санкт-Питербург", "Днепр", "Истамбул", "Владивосток",
-    "Таганрог", "Харьков", "Одесса", "Караганда", "Минск", "Сколково", "Екатеринбург",
-    "Варшава", "Мариуполь" 
-];
+
+
+
+
+//API & TOKEN
+const   citiesAPI = 'http://api.travelpayouts.com/data/ru/cities.json',
+        proxy = 'https://cors-anywhere.herokuapp.com/',
+        API_KEY = 'ba6c7ed27001ef7b6a055635bda5a3e3',
+        calendar = 'http://min-prices.aviasales.ru/calendar_preload';
+
+//миссив городов когда вводим данные в input
+let city = [];
 
 //вывод городов по введенным данным
 const showCity =  (input, list) => {
@@ -25,8 +33,11 @@ const showCity =  (input, list) => {
         const filterCity = city.filter((item) => {
 
             //возврат списка город
-            const lowerItem = item.toLowerCase();
+           
+            const lowerItem = item.name.toLowerCase();
             return lowerItem.includes(input.value.toLowerCase());
+            
+            
         });
         
         //вывод город в список по введеным данным
@@ -35,11 +46,42 @@ const showCity =  (input, list) => {
             //создание елемента списка
             const li = document.createElement('li');
             li.classList.add('dropdown__city');
-            li.textContent = item;
+            li.textContent = item.name;
             list.append(li);
         });
     }
    
+};
+
+//Клик по выбранному городу и вывод его в форму
+const selectCity = (event, input, dropdown) => {
+    const targetCity = event.target;
+    if (targetCity.tagName.toLowerCase() === 'li') {
+        input.value = targetCity.textContent;
+        dropdown.textContent = '';
+    }
+
+};
+
+//получения JSON
+const getData = (url, callback) => {
+    const request = new XMLHttpRequest();
+    
+    request.open('GET', url);
+
+    request.addEventListener('readystatechange', () => {
+        if(request.readyState !== 4) {
+            return;
+        } 
+
+        if(request.status === 200){
+            callback(request.response);
+        } else {
+            console.error(request.status);
+        }
+    });
+
+    request.send();
 };
 
 //ввод данных в форму "Откуда" и передача данных функции вывода
@@ -54,21 +96,31 @@ inputCitiesTo.addEventListener('input', () => {
 
 //вывод города в форму "Откуда" по клику 
 dropdownCitiesFrom.addEventListener('click', (event) => {
-
-    const targetCityFrom = event.target;
-    if (targetCityFrom.tagName.toLowerCase() === 'li') {
-        inputCitiesFrom.value = targetCityFrom.textContent;
-        dropdownCitiesFrom.textContent = '';
-    }
-
+    selectCity(event, inputCitiesFrom, dropdownCitiesFrom);
 });
 
 //вывод города в форму "Кудв" по клику 
 dropdownCitiesTo.addEventListener('click', (event) => {
-    const targetCityTo = event.target;
-    if (targetCityTo.tagName.toLowerCase() === 'li') {
-        inputCitiesTo.value = targetCityTo.textContent;
-        dropdownCitiesTo.textContent = '';
-    }
+    selectCity(event, inputCitiesTo, dropdownCitiesTo);
 });
+
+
+//получение городов
+/*
+getData(proxy + citiesAPI, (data) =>{  
+    city = JSON.parse(data).filter((item) => {
+        return item.name;
+    });
+    
+});
+*/
+
+
+//получения рейса 
+getData(calendar + '?origin=KGD&destination=SVX&depart_date=2020-05-25&one_way=false', (data) => {
+   console.log(JSON.parse(data));
+  
+});
+ 
+
 
